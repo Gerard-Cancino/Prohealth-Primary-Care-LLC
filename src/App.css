@@ -1,0 +1,60 @@
+html {
+  -ms-overflow-style:none;
+  overflow: -moz-scrollbars-none;
+  scrollbar-width:none;
+}
+
+::-webkit-scrollbar { 
+  display: none; 
+}
+
+html a {
+  color: black
+}
+
+.slideButton {
+  background-color: rgba(0,0,0,0);
+  border: 0;
+}
+#prevButton:hover{
+  background-image: linear-gradient(to right, rgba(255,255,255,0.4),rgba(0,0,0,0));
+}
+#nextButton:hover {
+  background-image: linear-gradient(to left, rgba(255,255,255,0.4),rgba(0,0,0,0));
+}
+.form:hover {
+  background-color: rgba(255,255,255,0.2);
+  text-decoration-color: white;
+}
+.item {
+  -webkit-animation: fadein 2s; /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation: fadein 2s; /* Firefox < 16 */
+   -ms-animation: fadein 2s; /* Internet Explorer */
+    -o-animation: fadein 2s; /* Opera < 12.1 */
+       animation: fadein 2s;
+}
+
+@media (orientation:portrait) {
+  .col-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+@media (orientation:landscape) and (max-width: 767px) {
+  #formSmall {
+    display: flex !important;
+  }
+  #formInput {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%
+  }
+  #formHeader {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%
+  }
+}
+
+.nav-link:hover {
+  background-color: 'rgba(255, 255, 255, 0.3)';
+  transition: 'background-color 2s ease';
+}

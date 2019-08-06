@@ -1,0 +1,7 @@
+#home {
+  background-image: url("./image/generic.jpg");
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+  height: 800px;
+}
