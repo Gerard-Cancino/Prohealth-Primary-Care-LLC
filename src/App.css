@@ -2,14 +2,24 @@ html {
   -ms-overflow-style:none;
   overflow: -moz-scrollbars-none;
   scrollbar-width:none;
+  margin: 0;
+  top:0;
 }
-
+body {
+  margin: 0;
+}
+.section-height{
+  height: calc(var(--vh,1vh)*100) !important;
+}
+.background-height{
+  height: calc(var(--vh,1vh)*100) !important;
+}
 ::-webkit-scrollbar { 
   display: none; 
 }
 
 html a {
-  color: black
+  color: black;
 }
 
 .slideButton {
@@ -35,12 +45,52 @@ html a {
 }
 
 @media (orientation:portrait) {
-  .col-3 {
+  .cus-col {
     flex: 0 0 100%;
     max-width: 100%;
   }
+  #map {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  #contact-info{
+    flex: 0 0 100%;
+    max-width:100%;
+    display:block !important;
+  }
 }
-@media (orientation:landscape) and (max-width: 767px) {
+
+@media (orientation:portrait) and (max-height: 10000px) {
+  #contact-header {
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+  }
+  #contact-info h5 {
+    font-size: 1.00rem;
+  }
+  #contact-info p {
+    font-size: 0.75rem;
+    margin: 0;
+  }
+}
+@media (orientation:portrait) and (max-width: 400px){
+  #navSmall {
+    font-size: 1.00rem;
+    font-weight: bold;
+  }
+}
+@media (orientation:landscape) and (max-width: 800px) {
+  #navBig {
+    display: none !important;
+  }
+  #navSmall {
+    display: block !important;
+  }
   #formSmall {
     display: flex !important;
   }
@@ -52,9 +102,67 @@ html a {
     flex: 0 0 33.333333%;
     max-width: 33.333333%
   }
+  #br-form {
+    display: none !important;
+  }
+}
+@media (orientation:landscape) and (max-width:1367px) and (max-height:800px){
+  #formBig {
+    display: none !important;
+  }
+  #navBig {
+    display: none !important;
+  }
+  #formSmall {
+    display: flex !important;
+  }
+  #navSmall {
+    display: block !important;
+  }
+  #formInput {
+    flex: 0 0 66.666667%;
+    max-width: 66.666667%   
+  }
+  #formHeader {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%
+  }
+  /* .cus-col {
+    flex: 0 0 25%;
+    max-width: 25%;
+  } */
+  #contact-header {
+    display: block;
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-weight: bold;
+  }
+  #contact-info h5 {
+    font-size: 1.00rem;
+  }
+  #contact-info p {
+    font-size: 0.75rem;
+  }
 }
 
 .nav-link:hover {
   background-color: 'rgba(255, 255, 255, 0.3)';
   transition: 'background-color 2s ease';
+}
+.header-section {
+  height: calc(var(--header,0px)* 100) !important;
+  display:block;
+  /* height: calc((var(--vh,1vh) - var(--header,0px))*100) */
+}
+.body-section {
+  height: calc((var(--vh,1vh) - var(--header,0px))*100)
+}
+#map iframe {
+  pointer-events: none;
+}
+#map iframe.clicked {
+  pointer-events: auto;
 }

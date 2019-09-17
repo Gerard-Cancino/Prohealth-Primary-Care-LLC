@@ -48,7 +48,7 @@ const sectionList = {
       backgroundSize: 'cover',
     },
     sectionStyle: {
-      height:'100vh',position:'absolute', top: '100vh',zIndex:'1',
+      position:'absolute', top: '100vh',zIndex:'1',
       transition: transition,
       transitionTimingFunction: transitionTimingFunction
     },
@@ -76,6 +76,8 @@ const sectionList = {
 }
 
 let isScrolling = false;
+let startY = -1;
+
 class App extends React.Component {
   state = {
     section: 'home',
@@ -103,25 +105,61 @@ class App extends React.Component {
     window.scrollTo(0,0)
     this.initializePositioningHeight();
     this.changeScroll();
+    this.setState({orientation:this.determineOrientation()})
     window.onresize = () => {
-      window.scrollTo(0,0);
-      this.resetScreenSize();
-      this.initializePositioningHeight();
+      if (!this.isMobile()) {
+        window.scrollTo(0,0);
+        this.resetScreenSize();
+        this.initializePositioningHeight();
+      }
+      else{
+        if(this.state.orientation!==this.determineOrientation()){
+          this.setState({orientation:this.determineOrientation()});
+          window.scrollTo(0,0);
+          this.resetScreenSize();
+          this.initializePositioningHeight();
+        }
+        else{
+          window.scrollTo(0,0);
+        }
+      }
     }
   }
+  componentWillUnmount(){
+    window.onresize = null;
+  }
+  redoPositioning(){
+    // eslint-disable-next-line
+    for (let key of Object.keys(sectionList)){
+      const doc = this.state.doc[key];
+      doc.top=this.state.sectionPosition[key];
+    }
+  }
+  isMobile(){
+    if(startY>-1 && (window.innerWidth<1367||window.innerHeight<1080||(window.innerHeight<1367&&this.determineOrientation()==='portrait'))){
+      return true;
+    }
+    return false;
+  }
+  determineOrientation(){
+    if(window.innerHeight>window.innerWidth)
+      return 'portrait';
+    else
+      return 'landscape';
+  }
   initializePositioningHeight () {
-    const height = document.getElementById('home').offsetHeight;
-    this.setState({sectionPosition:this.getPosition(),
-      sectionHeight:height,
+    document.documentElement.style.setProperty('--vh',`${window.innerHeight*0.01}px`)
+    this.setState({
       doc:{
         home: document.getElementById('home'),
         contact: document.getElementById('contact'),
         form: document.getElementById('form')
       }
+    },()=>{
+      this.resetScreenSize();
     })
   }
   resetScreenSize () {
-    const height = document.getElementById('home').offsetHeight;
     let newPosition = {
       home: this.state.sectionPosition['home'],
       contact: this.state.sectionPosition['contact'],
@@ -129,12 +167,13 @@ class App extends React.Component {
     }
     Object.keys(this.state.sectionPosition).map(key=>{
       let doc = this.state.doc[key] ;
-      newPosition[key] = height*this.state.sectionHash[key];
+      newPosition[key] = window.innerHeight*this.state.sectionHash[key];
       doc.style.top = newPosition[key] + 'px';
       return true;
     })
     setTimeout(()=>{
       this.setState((prevState)=>({
+        sectionHeight:window.innerHeight,
         sectionPosition:{
           home: newPosition['home'],
           contact: newPosition['contact'],
@@ -153,20 +192,27 @@ class App extends React.Component {
       34: 1,
       35: 1
     }
-    if(e.type.toString()!=='keydown')
-      e.preventDefault()
+    if(e.type.toString()!=='keydown'){
+      e.preventDefault();
+      e.stopPropagation();
+    }
     else
-      if(keyList[e.keyCode]!==undefined)
-        e.preventDefault()
+      if(keyList[e.keyCode]!==undefined){
+        e.preventDefault();
+        e.stopPropagation();
+      }
   }
   changeScroll() {  
-      if (window.addEventListener) // older FF
-          window.addEventListener('DOMMouseScroll', e=>this.move(e), false);
-      document.addEventListener('wheel', e=>this.move(e), {passive: false}); // Disable scrolling in Chrome
+    if (window.addEventListener) // older FF
+        window.addEventListener('DOMMouseScroll', e=>this.move(e), false);
+    document.addEventListener('wheel', e=>this.move(e), {passive: false}); // Disable scrolling in Chrome
+    window.addEventListener('wheel', e=>this.move(e), {passive: false}); // Disable scrolling in Chrome
     window.onmousewheel = document.onmousewheel = (e) => this.move(e); 
     window.onwheel = (e) => this.move(e); 
     window.ontouchmove = (e) => this.move(e);  
     document.onkeydown = (e) => this.move(e);  
+    document.addEventListener('touchmove',e=>this.move(e), {passive:false});
+    document.addEventListener('touchstart',e=>this.touchStart(e), false)
   }
   getPosition(){
     return {
@@ -187,6 +233,7 @@ class App extends React.Component {
       }
       let isChanging = false;
       const sectionList = Object.keys(this.state.sectionPosition)
+      // eslint-disable-next-line
       for(let section of sectionList){
         if(this.isAbleMoveSection(section,direction)){
           if(!this.isOtherSectionsOnTop(section)){
@@ -196,7 +243,6 @@ class App extends React.Component {
                 newPosition[section] = 0;
               else
                 newPosition[section] = this.calcNewTop(section,direction)/2;
-                
             }
             else{
               newPosition[section] = this.calcNewTop(section,direction);
@@ -216,11 +262,11 @@ class App extends React.Component {
             form: newPosition['form']
           }
         }))
-      },timeForScrolling*1000)
+      },timeForScrolling*1000);
     }
   }
   isGoingAbovePage(checkThisSection,direction){
-    return this.state.sectionPosition[checkThisSection]<0?(true):(direction==='down'&&this.state.sectionPosition[checkThisSection]===0?true:false)
+    return this.state.sectionPosition[checkThisSection]<0?(true):(direction==='down'&&this.state.sectionPosition[checkThisSection]===0?true:false);
   }
   isOtherSectionsOnTop(checkThisSection){
     if(Object.keys(this.state.sectionPosition)
@@ -248,19 +294,29 @@ class App extends React.Component {
       return false;
   }
   calcNewTop(section,direction){
-    return this.state.sectionPosition[section] + (direction==='up'?(this.state.sectionHeight):(this.state.sectionHeight*-1))
+    return this.state.sectionPosition[section] + (direction==='up'?(this.state.sectionHeight):(this.state.sectionHeight*-1));
   }
   moveSection(topBound,docSection){
     docSection.style.top=topBound+'px';
     setTimeout(()=>{
       isScrolling=false;
-    },timeForScrolling*1001) 
+    },timeForScrolling*1001);
   }
   determineDirection = (e) =>{
-    if(e.deltaY<0||e.keyCode===38||e.keyCode===33)
-      return 'up';
-    if(e.deltaY>0||e.keyCode===40||e.keyCode===32||e.keyCode===34||e.keyCode===35)
-      return 'down';
+    if(e.deltaY!==undefined){
+      if(e.deltaY<0||e.keyCode===38||e.keyCode===33)
+        return 'up';
+      if(e.deltaY>0||e.keyCode===40||e.keyCode===32||e.keyCode===34||e.keyCode===35)
+        return 'down';
+    }
+    else if(e.touches !== undefined){
+      const offsetY = startY - e.touches[0].pageY;
+      if(offsetY<0){
+        return 'up';
+      }
+      else if (offsetY>0)
+        return 'down';
+    }
   }
   navMove = (e,selectedSection) => {
     if(!isScrolling){
@@ -288,12 +344,12 @@ class App extends React.Component {
                 length--;
               }
               nextPositionList[key] = nextPositionList[key] + this.state.sectionHeight*length;
-              this.moveSection(nextPositionList[key],this.state.doc[key])
+              this.moveSection(nextPositionList[key],this.state.doc[key]);
             }
             else{
               let currentPosition = this.state.sectionPosition[key];
               nextPositionList[key] = currentPosition +this.state.sectionHeight*(length);
-              this.moveSection(nextPositionList[key],this.state.doc[key])
+              this.moveSection(nextPositionList[key],this.state.doc[key]);
             }
             return true;
           })
@@ -303,17 +359,17 @@ class App extends React.Component {
             if(originalPosition<0){
               if(this.state.section[key]-originalPosition>0){
                 nextPositionList[key] = this.state.sectionPosition[key]-originalPosition;
-                this.moveSection(nextPositionList[key],this.state.doc[key])
+                this.moveSection(nextPositionList[key],this.state.doc[key]);
               }
             }
             else{
               if(this.state.sectionPosition[key]-originalPosition<0){
                 nextPositionList[key] = -this.state.sectionHeight/2;
-                this.moveSection(nextPositionList[key],this.state.doc[key])
+                this.moveSection(nextPositionList[key],this.state.doc[key]);
               }
               else{
                 nextPositionList[key] = this.state.sectionPosition[key]-originalPosition;
-                this.moveSection(nextPositionList[key],this.state.doc[key])
+                this.moveSection(nextPositionList[key],this.state.doc[key]);
               }
             }
             return true;
@@ -325,17 +381,21 @@ class App extends React.Component {
       },1001);
     }
   }
+  touchStart(e){
+    startY = e.touches[0].pageY;
+  }
   render() {
     return (
       <div className="h-100 w-100">
-        <Nav navStyle={sectionList[this.state.section].navStyle} navMove={this.navMove.bind(this)}/>
+        <Nav id="headerNav" navStyle={sectionList[this.state.section].navStyle} navMove={this.navMove.bind(this)}/>
         {Object.keys(sectionList).map(key=>(
           <Section
             key={key}
             theKey={key}
             backgroundStyle={sectionList[key].backgroundStyle} 
             sectionStyle={sectionList[key].sectionStyle}
-            body={sectionList[key].body}/>
+            body={sectionList[key].body}
+            redoPositioning={this.redoPositioning.bind(this)}/>
         ))}
       </div>
     );

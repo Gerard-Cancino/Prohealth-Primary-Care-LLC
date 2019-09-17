@@ -84,14 +84,48 @@ class Form extends React.Component {
       },
     ],
     newFormList:[],
-    searchQuery: ''
+    searchQuery: '',
+    splitBy: 1,
+    slideIndex: 0,
+    
   }
   componentDidMount(){
     this.splitForms(this.state.formList);
+    window.addEventListener('resize',(e)=>this.splitForms(this.state.formList.filter(form=>(
+      form.title.toLowerCase().includes(this.state.searchQuery.toString().toLowerCase())
+    ))),false)
+  }
+  componentWillUnmount(){
+    window.removeEventListener('resize',(e)=>this.splitForms(this.state.formList.filter(form=>(
+      form.title.toLowerCase().includes(this.state.searchQuery.toString().toLowerCase())
+    ))),false);
+  }
+  prevSlide (e) {
+    e.preventDefault();
+    let newIndex;
+    if(this.state.slideIndex<=0)
+      newIndex = this.state.newFormList.length-1;
+    else
+      newIndex = this.state.slideIndex-1;
+    this.setState({slideIndex:newIndex})
+  }
+  nextSlide (e) {
+    e.preventDefault();
+    let newIndex;
+    console.log(this.state.slideIndex)
+    if(this.state.slideIndex>=this.state.newFormList.length-1)
+      newIndex = 0;
+    else
+      newIndex = this.state.slideIndex+1;
+    this.setState({slideIndex:newIndex})
+  }
+  chooseSlide(e,index){
+    e.preventDefault();
+    this.setState({slideIndex:index})
   }
   splitForms (formList){
     let copyFormList = [...formList];
-    let splitBy = 0;
+    let splitBy = 1;
     if (Math.ceil(window.outerWidth/300>4))
       splitBy = 4;
     else
@@ -99,10 +133,10 @@ class Form extends React.Component {
     let newFormList = [];
     while (copyFormList.length > 0)
       newFormList.push(copyFormList.splice(0,splitBy));
-    this.setState(()=>({newFormList:newFormList}))
+    this.setState(()=>({newFormList:newFormList,splitBy:splitBy}))
   }
   handleForm (e) {
-    this.setState({searchQuery:e.target.value||''})
+    this.setState({searchQuery:e.target.value||'',slideIndex:0})
     this.splitForms(this.state.formList.filter(form=>(
       form.title.toLowerCase().includes(e.target.value.toString().toLowerCase())
     )))
@@ -110,32 +144,35 @@ class Form extends React.Component {
   render(){
     return(
     <React.Fragment>
-      <span id="form"></span>
-      <div className='container-fluid align-self-center'>
-        <br className="d-inline d-md-none"/> 
-        <br className="d-inline d-md-none"/> 
-        <div className="row">
-          <div className="d-none d-md-block offset-1 col-10 p-0">
-            <h1 className="col-2 col-md-12 text-center" style={{color:'white'}}><strong>Forms</strong></h1>
-            <br className="d-none d-md-inline"/>
-            <input className="col-10 col-md-12 w-100 form-control align-self-center" onChange={(e)=>this.handleForm(e)} value={this.state.searchQuery} placeholder="Search for a Form"/>
+      <div className="header-section w-100" id="form"></div>
+      <div className='container-fluid body-section d-flex'>
+        <div className="my-auto w-100">
+          <div className="row">
+            <div id="formBig" className="d-none d-md-block offset-1 col-10 p-0">
+              <h1 className="col-2 col-md-12 text-center" style={{color:'white'}}><strong>Forms</strong></h1>
+              <br className="d-none d-md-inline"/>
+              <input className="col-10 col-md-12 w-100 form-control align-self-center" onChange={(e)=>this.handleForm(e)} value={this.state.searchQuery} placeholder="Search for a Form"/>
+            </div>
+            <div id="formSmall" className="d-block d-md-none offset-1 col-10 p-0">
+              <h3 id="formHeader" className="col-12 text-center" style={{color:'white'}}><strong>Forms</strong></h3>
+              <input id="formInput" className="col-12 form-control align-self-center" onFocus={this.props.redoPositioning} onChange={(e)=>this.handleForm(e)} value={this.state.searchQuery} placeholder="Search for a Form"/>
+            </div>
+            <div className="col-1"></div>
           </div>
-          <div id="formSmall" className="d-block d-md-none offset-1 col-10 p-0">
-            <h3 id="formHeader" className="col-12 text-center" style={{color:'white'}}><strong>Forms</strong></h3>
-            {/* <br className="d-none d-md-inline"/> */}
-            <input id="formInput" className="col-12 form-control align-self-center" onChange={(e)=>this.handleForm(e)} value={this.state.searchQuery} placeholder="Search for a Form"/>
+          <br id="br-form" className="d-none d-lg-inline"/> 
+          <div className="row">
+            <Slideshow formList={this.state.newFormList} 
+              splitBy={this.state.splitBy}
+              slideIndex={this.state.slideIndex}
+              prevSlide={this.prevSlide.bind(this)}
+              nextSlide={this.nextSlide.bind(this)}
+              chooseSlide={this.chooseSlide.bind(this)}/>
           </div>
-          <div className="col-1"></div>
+          <div className="container-fluid p-0" style={{bottom:'0',left:'0',position:'absolute'}}>
+            {/* <Footer /> */}
+            <div className="text-right">Developed By Gerard Cancino</div>
+          </div>
         </div>
-        <div className="row">
-          <Slideshow formList={this.state.newFormList}/>
-        </div>
-
-        <div className="container p-0" style={{bottom:'0',position:'absolute'}}>
-          {/* <Footer /> */}
-          <div className="text-right">Created By Gerard Cancino</div>
-        </div>
-
       </div>
     </React.Fragment>
     );

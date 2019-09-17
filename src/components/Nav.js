@@ -28,6 +28,9 @@ class Nav extends React.Component {
   state ={
     isShow: false,
   }
+  componentDidMount () {
+    document.documentElement.style.setProperty('--header',`${document.getElementById('navbar-header').offsetHeight*0.01}px`)
+  }
   showNavbar = (e) => {
     e.preventDefault();
     const navbarContent = document.getElementById('navbarContent');
@@ -44,10 +47,10 @@ class Nav extends React.Component {
     return(
       <header className="fixed-top container-fluid">
         <div className="row" >
-          <nav id="navbar" className="navbar navbar-expand-lg offset-md-1 col-md-10 border-rounded" style={this.state.isShow?(Tint):(Opacity)}>
+          <nav id="navbar-header" className="navbar navbar-expand-lg offset-md-1 col-md-10 border-rounded" style={this.state.isShow?(Tint):(Opacity)}>
             <button className="navbar-brand btn btn-link m-0 p-0" style={this.props.navStyle} onClick={(e)=>this.props.navMove(e,'home')}>
-              <p className='d-block d-md-none h4 m-0' style={this.props.navStyle}>Prohealth Primary Care</p>
-              <p className='d-none d-md-block h1 m-0' style={this.props.navStyle}><strong>Prohealth Primary Care</strong></p>
+              <p id="navSmall" className='d-block d-md-none h4 m-0' style={this.props.navStyle}>Prohealth Primary Care</p>
+              <p id="navBig" className='d-none d-md-block h1 m-0' style={this.props.navStyle}><strong>Prohealth Primary Care</strong></p>
             </button>
             <button className="navbar-toggler" onClick={e=>this.showNavbar(e)} style={{color:'white',outline:'none'}} >&#9776;</button>
             <div className="collapse navbar-collapse" id="navbarContent" style={this.state.isShow?(navContentShow):(navContentHide)}>
